@@ -1,0 +1,239 @@
+# EscPos - ESC/POS Printer Library for .NET
+
+A modern, lightweight .NET library for controlling ESC/POS thermal printers. Supports network (IP), serial, and file-based printer connections with comprehensive command support for receipts, barcodes, QR codes, and image printing.
+
+## Features
+
+- **Multiple Connection Types**: Network (TCP/IP), Serial Port, and File-based printers
+- **Rich Command Set**: Text formatting, alignment, fonts, character sizing, and more
+- **Image Support**: Print BMP images (1-bit, 4-bit, 8-bit, 16-bit, 24-bit, 32-bit) with RLE compression support
+- **Barcodes & QR Codes**: Generate and print various barcode formats and QR codes
+- **Printer Status**: Query paper status, drawer status, and printer state
+- **Async/Await**: Modern async API for non-blocking operations
+- **Type-Safe**: Strongly-typed commands with validation
+- **No External Dependencies**: Pure .NET implementation without image processing libraries
+
+## Installation
+
+```bash
+# Add reference to your project
+dotnet add reference path/to/EscPos.Printers.csproj
+dotnet add reference path/to/EscPos.Commands.csproj
+```
+
+## Quick Start
+
+### Basic Receipt Printing (Network Printer)
+
+```csharp
+using EscPos.Commands;
+using EscPos.Printers;
+using System.Text;
+
+// Connect to network printer (IP address and port)
+using IPrinter printer = new IPPrinter("192.168.1.100", 9100);
+await printer.ConnectAsync();
+
+// Build print buffer
+using var buffer = new PrintBuffer();
+buffer
+    .Write(PrintCommands.Initialize())
+    .Write(PrintCommands.AlignCenter())
+    .Write(PrintCommands.BoldOn())
+    .Write(PrintCommands.PrintLine("MY SHOP"))
+    .Write(PrintCommands.BoldOff())
+    .Write(PrintCommands.AlignLeft())
+    .Write(PrintCommands.PrintLine("Item A        $10.00"))
+    .Write(PrintCommands.PrintLine("Item B        $ 5.00"))
+    .Write(PrintCommands.PrintLine("----------------------------"))
+    .Write(PrintCommands.PrintLine("Total         $15.00"))
+    .Write(PrintCommands.LineFeed(2))
+    .Write(PrintCommands.AlignCenter())
+    .Write(PrintCommands.PrintLine("Thank you!"))
+    .Write(PrintCommands.FeedLines(3))
+    .Write(PrintCommands.CutFull());
+
+// Send to printer
+await printer.SendAsync(buffer.ToArray());
+```
+
+### Serial Printer
+
+```csharp
+using IPrinter printer = new SerialPrinter("COM3", 9600);
+await printer.ConnectAsync();
+// ... use same PrintBuffer API
+```
+
+### File Printer (for testing)
+
+```csharp
+using IPrinter printer = new FilePrinter("output.prn");
+await printer.ConnectAsync();
+// ... use same PrintBuffer API
+```
+
+## Advanced Features
+
+### QR Code Printing
+
+```csharp
+buffer
+    .Write(PrintCommands.AlignCenter())
+    .Write(PrintCommands.QrCodeSelectModel2())
+    .Write(PrintCommands.QrCodeSetModuleSize(6))
+    .Write(PrintCommands.QrCodeSetErrorCorrectionLevel(49)) // M level
+    .Write(PrintCommands.QrCodeStoreData(Encoding.ASCII.GetBytes("https://example.com")))
+    .Write(PrintCommands.QrCodePrint())
+    .Write(PrintCommands.LineFeed(2));
+```
+
+### Image Printing (BMP)
+
+```csharp
+byte[] bmpData = File.ReadAllBytes("logo.bmp");
+buffer
+    .Write(PrintCommands.AlignCenter())
+    .Write(PrintCommands.PrintBmpImage(bmpData))
+    .Write(PrintCommands.LineFeed(2));
+```
+
+Supported BMP formats:
+- **Bit Depths**: 1-bit, 4-bit, 8-bit, 16-bit, 24-bit, 32-bit
+- **Compression**: Uncompressed (BI_RGB), RLE8, RLE4
+- Automatic conversion to 1-bit monochrome for thermal printing
+
+### Barcode Printing
+
+```csharp
+buffer
+    .Write(PrintCommands.SetBarcodeHeight(80))
+    .Write(PrintCommands.SetBarcodeWidth(3))
+    .Write(PrintCommands.SetHriPosition(2)) // Print human-readable below
+    .Write(PrintCommands.PrintBarcode(73, Encoding.ASCII.GetBytes("123456789012")));
+```
+
+### Printer Status Check
+
+```csharp
+var status = new StatusHelper(printer);
+
+var paperStatuses = await status.GetPaperStatusAsync();
+Console.WriteLine($"Paper status: {string.Join(", ", paperStatuses)}");
+
+var drawerStatuses = await status.GetDrawerStatusAsync();
+Console.WriteLine($"Drawer status: {string.Join(", ", drawerStatuses)}");
+
+var printerStates = await status.GetPrinterStateAsync();
+Console.WriteLine($"Printer state: {string.Join(", ", printerStates)}");
+```
+
+### Text Formatting
+
+```csharp
+buffer
+    .Write(PrintCommands.BoldOn())
+    .Write(PrintCommands.PrintLine("Bold Text"))
+    .Write(PrintCommands.BoldOff())
+    .Write(PrintCommands.Underline1Dot())
+    .Write(PrintCommands.PrintLine("Underlined Text"))
+    .Write(PrintCommands.UnderlineOff())
+    .Write(PrintCommands.SetCharacterSize(2, 2)) // 2x width, 2x height
+    .Write(PrintCommands.PrintLine("Large Text"))
+    .Write(PrintCommands.SetCharacterSizeNormal())
+    .Write(PrintCommands.InvertOn())
+    .Write(PrintCommands.PrintLine("Inverted Text"))
+    .Write(PrintCommands.InvertOff());
+```
+
+## Project Structure
+
+- **EscPos.Commands**: Core ESC/POS command generation (no dependencies)
+- **EscPos.Printers**: Printer connection implementations (Network, Serial, File)
+- **EscPos.Console**: Example console application
+- **EscPos.UnitTests**: Unit tests
+
+## Requirements
+
+- **.NET 10.0** or later
+- For serial printers: Windows, Linux, or macOS with serial port support
+
+## License
+
+MIT License
+
+Copyright (c) 2025
+
+Permission is hereby granted, free of charge, to any person obtaining a copy
+of this software and associated documentation files (the "Software"), to deal
+in the Software without restriction, including without limitation the rights
+to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+copies of the Software, and to permit persons to whom the Software is
+furnished to do so, subject to the following conditions:
+
+The above copyright notice and this permission notice shall be included in all
+copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+SOFTWARE.
+
+## Contributing
+
+Contributions are welcome! Please feel free to submit issues and pull requests.
+
+## Supported Commands
+
+### Initialization & Control
+- `Initialize()`, `RequestStatus()`
+
+### Text & Formatting
+- `Text()`, `PrintLine()`, `LineFeed()`, `FeedLines()`, `FeedDots()`
+- `Bold()`, `Underline()`, `DoubleStrike()`, `Invert()`
+- `SetCharacterSize()`, `SelectFont()`
+- `AlignLeft()`, `AlignCenter()`, `AlignRight()`
+
+### Positioning
+- `HorizontalTab()`, `CarriageReturn()`, `FormFeed()`
+- `SetAbsolutePrintPosition()`, `SetPrintPositionRelative()`
+- `SetLeftMargin()`, `SetLineSpacing()`, `SetRightSideCharacterSpacing()`
+
+### Images & Graphics
+- `PrintBmpImage()` - Supports 1/4/8/16/24/32-bit BMPs with RLE compression
+- `PrintRasterImage()` - Print raw 1-bit raster data
+
+### Barcodes & QR Codes
+- `PrintBarcode()`, `SetBarcodeHeight()`, `SetBarcodeWidth()`, `SetHriPosition()`
+- `QrCodeSelectModel2()`, `QrCodeSetModuleSize()`, `QrCodeSetErrorCorrectionLevel()`
+- `QrCodeStoreData()`, `QrCodePrint()`
+
+### Paper & Cutting
+- `CutFull()`, `CutPartial()`
+
+### Cash Drawer
+- `PulseCashDrawer2()`, `PulseCashDrawer5()`
+
+### Internationalization
+- `SelectCodePage()`, `SelectInternationalCharacterSet()`
+
+## Tested Printers
+
+This library follows the ESC/POS standard and should work with most thermal receipt printers including:
+- Epson TM series
+- Star Micronics
+- Citizen
+- Bixolon
+- And other ESC/POS compatible printers
+
+## Examples
+
+See the `EscPos.Console` project for a complete working example demonstrating:
+- Text formatting and alignment
+- BMP image printing
+- Raster image generation and printing
+- QR code generation
+- Status checking

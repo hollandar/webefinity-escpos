@@ -1,0 +1,9 @@
+<Solution>
+  <Folder Name="/Solution Items/">
+    <File Path="README.md" />
+  </Folder>
+  <Project Path="EscPos.Commands/EscPos.Commands.csproj" Id="a18a8636-b31d-4ba6-bd7b-3a2a64594de2" />
+  <Project Path="EscPos.Console/EscPos.Console.csproj" />
+  <Project Path="EscPos.Printers/EscPos.Printers.csproj" Id="fa0eb1de-517f-4893-baf3-4139f400a6a2" />
+  <Project Path="EscPos.UnitTests/EscPos.UnitTests.csproj" Id="e04b9357-2ca4-4a29-998e-1bb0eb58280b" />
+</Solution>
