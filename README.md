@@ -143,12 +143,7 @@ await printer.SendAsync(commands);
 - Schema validation
 - All ESC/POS commands available as XML elements
 
-**?? [Complete XML Template Documentation](ReceiptXmlParser.md)**
-- [Template Variables Guide](ReceiptTemplateVariables.md)
-- [Conditional Rendering Guide](ReceiptConditionals.md)
-- [For Loops Guide](ReceiptLoops.md)
-- [Template Variables Guide](ReceiptTemplateVariables.md)
-- [For Loops Guide](ReceiptLoops.md)
+**?? See [Documentation](#documentation) section below for complete guides.**
 
 ### QR Code Printing
 
