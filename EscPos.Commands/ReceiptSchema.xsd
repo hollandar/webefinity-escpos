@@ -1,0 +1,264 @@
+<?xml version="1.0" encoding="utf-8"?>
+<xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema"
+           targetNamespace="http://webefinity.com/escpos/receipt"
+           xmlns="http://webefinity.com/escpos/receipt"
+           elementFormDefault="qualified">
+
+  <xs:element name="receipt" type="receiptType"/>
+
+  <xs:complexType name="receiptType">
+    <xs:choice minOccurs="0" maxOccurs="unbounded">
+      <xs:element name="text" type="textType"/>
+      <xs:element name="line" type="lineType"/>
+      <xs:element name="bold" type="styledTextType"/>
+      <xs:element name="underline" type="underlineType"/>
+      <xs:element name="invert" type="styledTextType"/>
+      <xs:element name="size" type="sizeType"/>
+      <xs:element name="align" type="alignType"/>
+      <xs:element name="font" type="fontType"/>
+      <xs:element name="rotate90" type="styledTextType"/>
+      <xs:element name="qrcode" type="qrcodeType"/>
+      <xs:element name="barcode" type="barcodeType"/>
+      <xs:element name="image" type="imageType"/>
+      <xs:element name="feed" type="feedType"/>
+      <xs:element name="cut" type="cutType"/>
+      <xs:element name="drawer" type="drawerType"/>
+      <xs:element name="beep" type="beepType"/>
+      <xs:element name="initialize"/>
+      <xs:element name="spacing" type="spacingType"/>
+      <xs:element name="margin" type="marginType"/>
+      <xs:element name="codepage" type="codepageType"/>
+      <xs:element name="for" type="forType"/>
+    </xs:choice>
+    <xs:attribute name="encoding" type="xs:string"/>
+  </xs:complexType>
+
+  <xs:complexType name="textType">
+    <xs:simpleContent>
+      <xs:extension base="xs:string">
+        <xs:attribute name="encoding" type="xs:string"/>
+      </xs:extension>
+    </xs:simpleContent>
+  </xs:complexType>
+
+  <xs:complexType name="lineType">
+    <xs:simpleContent>
+      <xs:extension base="xs:string">
+        <xs:attribute name="encoding" type="xs:string"/>
+      </xs:extension>
+    </xs:simpleContent>
+  </xs:complexType>
+
+  <xs:complexType name="styledTextType" mixed="true">
+    <xs:choice minOccurs="0" maxOccurs="unbounded">
+      <xs:element name="text" type="textType"/>
+      <xs:element name="line" type="lineType"/>
+      <xs:element name="bold" type="styledTextType"/>
+      <xs:element name="underline" type="underlineType"/>
+      <xs:element name="invert" type="styledTextType"/>
+      <xs:element name="size" type="sizeType"/>
+    </xs:choice>
+  </xs:complexType>
+
+  <xs:complexType name="underlineType" mixed="true">
+    <xs:choice minOccurs="0" maxOccurs="unbounded">
+      <xs:element name="text" type="textType"/>
+      <xs:element name="line" type="lineType"/>
+    </xs:choice>
+    <xs:attribute name="mode" default="1">
+      <xs:simpleType>
+        <xs:restriction base="xs:integer">
+          <xs:minInclusive value="0"/>
+          <xs:maxInclusive value="2"/>
+        </xs:restriction>
+      </xs:simpleType>
+    </xs:attribute>
+  </xs:complexType>
+
+  <xs:complexType name="sizeType" mixed="true">
+    <xs:choice minOccurs="0" maxOccurs="unbounded">
+      <xs:element name="text" type="textType"/>
+      <xs:element name="line" type="lineType"/>
+      <xs:element name="bold" type="styledTextType"/>
+    </xs:choice>
+    <xs:attribute name="width" default="1">
+      <xs:simpleType>
+        <xs:restriction base="xs:integer">
+          <xs:minInclusive value="1"/>
+          <xs:maxInclusive value="8"/>
+        </xs:restriction>
+      </xs:simpleType>
+    </xs:attribute>
+    <xs:attribute name="height" default="1">
+      <xs:simpleType>
+        <xs:restriction base="xs:integer">
+          <xs:minInclusive value="1"/>
+          <xs:maxInclusive value="8"/>
+        </xs:restriction>
+      </xs:simpleType>
+    </xs:attribute>
+  </xs:complexType>
+
+  <xs:complexType name="alignType" mixed="true">
+    <xs:choice minOccurs="0" maxOccurs="unbounded">
+      <xs:element name="text" type="textType"/>
+      <xs:element name="line" type="lineType"/>
+      <xs:element name="bold" type="styledTextType"/>
+      <xs:element name="size" type="sizeType"/>
+    </xs:choice>
+    <xs:attribute name="value" use="required">
+      <xs:simpleType>
+        <xs:restriction base="xs:string">
+          <xs:enumeration value="left"/>
+          <xs:enumeration value="center"/>
+          <xs:enumeration value="right"/>
+        </xs:restriction>
+      </xs:simpleType>
+    </xs:attribute>
+  </xs:complexType>
+
+  <xs:complexType name="fontType">
+    <xs:attribute name="name" use="required">
+      <xs:simpleType>
+        <xs:restriction base="xs:string">
+          <xs:enumeration value="A"/>
+          <xs:enumeration value="B"/>
+        </xs:restriction>
+      </xs:simpleType>
+    </xs:attribute>
+  </xs:complexType>
+
+  <xs:complexType name="qrcodeType">
+    <xs:attribute name="data" type="xs:string" use="required"/>
+    <xs:attribute name="size" default="4">
+      <xs:simpleType>
+        <xs:restriction base="xs:integer">
+          <xs:minInclusive value="1"/>
+          <xs:maxInclusive value="16"/>
+        </xs:restriction>
+      </xs:simpleType>
+    </xs:attribute>
+    <xs:attribute name="errorLevel" default="M">
+      <xs:simpleType>
+        <xs:restriction base="xs:string">
+          <xs:enumeration value="L"/>
+          <xs:enumeration value="M"/>
+          <xs:enumeration value="Q"/>
+          <xs:enumeration value="H"/>
+        </xs:restriction>
+      </xs:simpleType>
+    </xs:attribute>
+  </xs:complexType>
+
+  <xs:complexType name="barcodeType">
+    <xs:attribute name="type" use="required">
+      <xs:simpleType>
+        <xs:restriction base="xs:string">
+          <xs:enumeration value="upca"/>
+          <xs:enumeration value="upce"/>
+          <xs:enumeration value="ean13"/>
+          <xs:enumeration value="ean8"/>
+          <xs:enumeration value="code39"/>
+          <xs:enumeration value="itf"/>
+          <xs:enumeration value="codabar"/>
+          <xs:enumeration value="code128"/>
+        </xs:restriction>
+      </xs:simpleType>
+    </xs:attribute>
+    <xs:attribute name="data" type="xs:string" use="required"/>
+    <xs:attribute name="height" type="xs:unsignedByte" default="80"/>
+    <xs:attribute name="width" type="xs:unsignedByte" default="3"/>
+    <xs:attribute name="hri">
+      <xs:simpleType>
+        <xs:restriction base="xs:string">
+          <xs:enumeration value="none"/>
+          <xs:enumeration value="above"/>
+          <xs:enumeration value="below"/>
+          <xs:enumeration value="both"/>
+        </xs:restriction>
+      </xs:simpleType>
+    </xs:attribute>
+  </xs:complexType>
+
+  <xs:complexType name="imageType">
+    <xs:attribute name="path" type="xs:string" use="required"/>
+    <xs:attribute name="fn" type="xs:unsignedByte" default="50"/>
+  </xs:complexType>
+
+  <xs:complexType name="feedType">
+    <xs:attribute name="lines" type="xs:unsignedByte"/>
+    <xs:attribute name="dots" type="xs:unsignedByte"/>
+  </xs:complexType>
+
+  <xs:complexType name="cutType">
+    <xs:attribute name="type" default="partial">
+      <xs:simpleType>
+        <xs:restriction base="xs:string">
+          <xs:enumeration value="full"/>
+          <xs:enumeration value="partial"/>
+        </xs:restriction>
+      </xs:simpleType>
+    </xs:attribute>
+    <xs:attribute name="feed" type="xs:unsignedByte"/>
+  </xs:complexType>
+
+  <xs:complexType name="drawerType">
+    <xs:attribute name="pin" default="2">
+      <xs:simpleType>
+        <xs:restriction base="xs:integer">
+          <xs:enumeration value="2"/>
+          <xs:enumeration value="5"/>
+        </xs:restriction>
+      </xs:simpleType>
+    </xs:attribute>
+    <xs:attribute name="onTime" type="xs:unsignedByte" default="120"/>
+    <xs:attribute name="offTime" type="xs:unsignedByte" default="240"/>
+  </xs:complexType>
+
+  <xs:complexType name="beepType">
+    <xs:attribute name="times" type="xs:unsignedByte" default="1"/>
+    <xs:attribute name="duration" type="xs:unsignedByte" default="5"/>
+  </xs:complexType>
+
+  <xs:complexType name="spacingType">
+    <xs:attribute name="character" type="xs:unsignedByte"/>
+    <xs:attribute name="line" type="xs:unsignedByte"/>
+  </xs:complexType>
+
+  <xs:complexType name="marginType">
+    <xs:attribute name="left" type="xs:unsignedShort" use="required"/>
+  </xs:complexType>
+
+  <xs:complexType name="codepageType">
+    <xs:attribute name="value" type="xs:unsignedByte" use="required"/>
+  </xs:complexType>
+
+  <xs:complexType name="forType">
+    <xs:choice minOccurs="0" maxOccurs="unbounded">
+      <xs:element name="text" type="textType"/>
+      <xs:element name="line" type="lineType"/>
+      <xs:element name="bold" type="styledTextType"/>
+      <xs:element name="underline" type="underlineType"/>
+      <xs:element name="invert" type="styledTextType"/>
+      <xs:element name="size" type="sizeType"/>
+      <xs:element name="align" type="alignType"/>
+      <xs:element name="font" type="fontType"/>
+      <xs:element name="rotate90" type="styledTextType"/>
+      <xs:element name="qrcode" type="qrcodeType"/>
+      <xs:element name="barcode" type="barcodeType"/>
+      <xs:element name="image" type="imageType"/>
+      <xs:element name="feed" type="feedType"/>
+      <xs:element name="cut" type="cutType"/>
+      <xs:element name="drawer" type="drawerType"/>
+      <xs:element name="beep" type="beepType"/>
+      <xs:element name="initialize"/>
+      <xs:element name="spacing" type="spacingType"/>
+      <xs:element name="margin" type="marginType"/>
+      <xs:element name="codepage" type="codepageType"/>
+      <xs:element name="for" type="forType"/>
+    </xs:choice>
+    <xs:attribute name="var" type="xs:string" use="required"/>
+    <xs:attribute name="in" type="xs:string" use="required"/>
+  </xs:complexType>
+
+</xs:schema>

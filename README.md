@@ -6,6 +6,7 @@ A modern, lightweight .NET library for controlling ESC/POS thermal printers. Sup
 
 - **Multiple Connection Types**: Network (TCP/IP), Serial Port, and File-based printers
 - **Rich Command Set**: Text formatting, alignment, fonts, character sizing, and more
+- **XML Template System**: Declarative receipt generation with variables and loops
 - **Image Support**: Print BMP images (1-bit, 4-bit, 8-bit, 16-bit, 24-bit, 32-bit) with RLE compression support
 - **Barcodes & QR Codes**: Generate and print various barcode formats and QR codes
 - **Printer Status**: Query paper status, drawer status, and printer state
@@ -74,6 +75,76 @@ await printer.ConnectAsync();
 ```
 
 ## Advanced Features
+
+### XML Template System (Recommended)
+
+For complex receipts with dynamic content, use the XML Template System:
+
+```csharp
+var xml = @"<?xml version=""1.0"" encoding=""utf-8""?>
+<receipt xmlns=""http://webefinity.com/escpos/receipt"">
+  <initialize/>
+  
+  <align value=""center"">
+    <bold>
+      <size width=""2"" height=""2"">
+        <line>${Store.Name}</line>
+      </size>
+    </bold>
+    <line>${Store.Address}</line>
+  </align>
+  
+  <line>================================</line>
+  <line>Order #${Order.Number}</line>
+  
+  <for var=""item"" in=""Order.Items"">
+    <text>${item.Quantity}x ${item.Name}</text>
+    <align value=""right"">
+      <line>$${item.Price}</line>
+    </align>
+  </for>
+  
+  <line>--------------------------------</line>
+  <align value=""right"">
+    <bold><line>Total: $${Order.Total}</line></bold>
+  </align>
+  
+  <qrcode data=""${Order.Url}"" size=""4"" errorLevel=""M""/>
+  
+  <feed lines=""3""/>
+  <cut type=""partial""/>
+</receipt>";
+
+var orderData = new
+{
+    Store = new { Name = "MY SHOP", Address = "123 Main St" },
+    Order = new
+    {
+        Number = "1234",
+        Items = new[]
+        {
+            new { Quantity = 1, Name = "Burger", Price = "12.99" },
+            new { Quantity = 2, Name = "Fries", Price = "6.98" }
+        },
+        Total = "19.97",
+        Url = "https://shop.com/order/1234"
+    }
+};
+
+byte[] commands = ReceiptXmlParser.Parse(xml, orderData);
+await printer.SendAsync(commands);
+```
+
+**Features:**
+- `${variable}` syntax for template substitution
+- `<for>` loops for iterating collections
+- Nested properties support (`${Order.Items}`)
+- Schema validation
+- All ESC/POS commands available as XML elements
+
+**?? [Complete XML Template Documentation](ReceiptXmlParser.md)**
+- [Template Variables Guide](ReceiptTemplateVariables.md)
+- [For Loops Guide](ReceiptLoops.md)
 
 ### QR Code Printing
 
@@ -148,10 +219,20 @@ buffer
 
 ## Project Structure
 
-- **EscPos.Commands**: Core ESC/POS command generation (no dependencies)
+- **EscPos.Commands**: Core ESC/POS command generation and XML template system
+  - `PrintCommands`: Low-level ESC/POS command generation
+  - `ReceiptXmlParser`: XML-based declarative receipt generation
+  - `ReceiptTemplateContext`: Template variable substitution engine
 - **EscPos.Printers**: Printer connection implementations (Network, Serial, File)
 - **EscPos.Console**: Example console application
-- **EscPos.UnitTests**: Unit tests
+- **EscPos.UnitTests**: Comprehensive unit tests
+
+## Documentation
+
+- **[XML Template System](ReceiptXmlParser.md)** - Complete guide to declarative receipt generation
+  - [Template Variables](ReceiptTemplateVariables.md) - `${variable}` syntax and usage
+  - [For Loops](ReceiptLoops.md) - Iterating over collections in templates
+- **API Reference** - See XML documentation in source code
 
 ## Requirements
 
