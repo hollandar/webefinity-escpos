@@ -1067,6 +1067,23 @@ public sealed class ReceiptXmlParserTests
     }
 
     [Fact]
+    public void Parse_IfWithNotAttributeWithoutValue_NegatesCondition()
+    {
+        var xml = $@"<?xml version=""1.0""?>
+<receipt xmlns=""{XmlNamespace}"">
+  <if condition=""HasDiscount"" not="""">
+    <line>No discount available</line>
+  </if>
+</receipt>";
+
+        var data = new { HasDiscount = false };
+        var result = ReceiptXmlParser.Parse(xml, data, validate: false);
+        var expected = PrintCommands.PrintLine("No discount available");
+
+        Assert.Equal(expected, result);
+    }
+
+    [Fact]
     public void Parse_IfWithNotAttributeTrue_SkipsWhenConditionTrue()
     {
         var xml = $@"<?xml version=""1.0""?>
@@ -1078,6 +1095,22 @@ public sealed class ReceiptXmlParserTests
 
         var data = new { HasDiscount = true };
         var result = ReceiptXmlParser.Parse(xml, data, validate: true);
+
+        Assert.Empty(result);
+    }
+
+    [Fact]
+    public void Parse_IfWithNotAttributeWithoutValue_SkipsWhenConditionTrue()
+    {
+        var xml = $@"<?xml version=""1.0""?>
+<receipt xmlns=""{XmlNamespace}"">
+  <if condition=""HasDiscount"" not="""">
+    <line>No discount available</line>
+  </if>
+</receipt>";
+
+        var data = new { HasDiscount = true };
+        var result = ReceiptXmlParser.Parse(xml, data, validate: false);
 
         Assert.Empty(result);
     }
