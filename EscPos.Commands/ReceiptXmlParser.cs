@@ -629,11 +629,11 @@ public class ReceiptXmlParser
             throw new ArgumentException("If condition 'condition' attribute is required.");
 
         // Check if the condition starts with '!' for negation
-        bool negate = condition.StartsWith('!');
+        bool negate = condition.StartsWith("!");
         if (negate)
         {
             // Remove the '!' prefix from the condition
-            condition = condition.Substring(1);
+            condition = condition[1..];
         }
 
         var conditionValue = _templateContext.GetValue(condition);
