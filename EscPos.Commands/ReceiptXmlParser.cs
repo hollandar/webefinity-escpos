@@ -633,18 +633,32 @@ public class ReceiptXmlParser
         var isTrue = EvaluateCondition(conditionValue);
         
         // Apply negation based on 'not' attribute presence and value
-        // - If 'not' attribute exists without a value, or with value "true": negate
+        // - If 'not' attribute exists without a value (empty string): negate
+        // - If 'not' attribute has value "true": negate
         // - If 'not' attribute has value "false": don't negate
         // - If 'not' attribute doesn't exist: don't negate
+        // - Any other value is treated as an error for clarity
         if (notAttribute is not null)
         {
-            // Attribute exists - check if it should negate
-            // Empty string (attribute without value) or "true" means negate
-            // "false" means don't negate
-            if (string.IsNullOrEmpty(notAttribute) || 
-                (bool.TryParse(notAttribute, out var notValue) && notValue))
+            // Attribute exists - determine if it should negate
+            if (string.IsNullOrEmpty(notAttribute))
             {
+                // Empty value means negate (e.g., not="")
                 isTrue = !isTrue;
+            }
+            else if (notAttribute.Equals("true", StringComparison.OrdinalIgnoreCase))
+            {
+                // Explicit true means negate
+                isTrue = !isTrue;
+            }
+            else if (notAttribute.Equals("false", StringComparison.OrdinalIgnoreCase))
+            {
+                // Explicit false means don't negate (no-op)
+            }
+            else
+            {
+                // Any other value is invalid
+                throw new ArgumentException($"Invalid value '{notAttribute}' for 'not' attribute. Valid values are: empty string, 'true', or 'false'.");
             }
         }
 

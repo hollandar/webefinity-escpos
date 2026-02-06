@@ -13,10 +13,11 @@ The `<if>` element allows you to conditionally include content in your receipt t
 **Attributes:**
 - `condition`: The path to a variable that will be evaluated as a boolean (required)
 - `not`: Negates the condition when present. Can be used as:
-  - `not` or `not=""` - negates the condition
+  - `not=""` - negates the condition (empty value)
   - `not="true"` - negates the condition
   - `not="false"` - does NOT negate (regular condition)
   - If omitted - does NOT negate (regular condition)
+  - Any other value throws an `ArgumentException`
 
 ## Simple Examples
 

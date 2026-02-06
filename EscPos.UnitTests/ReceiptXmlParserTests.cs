@@ -1166,6 +1166,23 @@ public sealed class ReceiptXmlParserTests
         Assert.Equal(expected, result);
     }
 
+    [Fact]
+    public void Parse_IfWithInvalidNotAttributeValue_ThrowsException()
+    {
+        var xml = $@"<?xml version=""1.0""?>
+<receipt xmlns=""{XmlNamespace}"">
+  <if condition=""HasDiscount"" not=""invalid"">
+    <line>Content</line>
+  </if>
+</receipt>";
+
+        var data = new { HasDiscount = true };
+        var ex = Assert.Throws<ArgumentException>(() => 
+            ReceiptXmlParser.Parse(xml, data, validate: false));
+        
+        Assert.Contains("Invalid value 'invalid' for 'not' attribute", ex.Message);
+    }
+
     #endregion
 
     #region File-based Tests
