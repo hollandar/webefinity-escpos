@@ -12,6 +12,7 @@ The `<if>` element allows you to conditionally include content in your receipt t
 
 **Attributes:**
 - `condition`: The path to a variable that will be evaluated as a boolean (required)
+- `not`: When set to `true`, negates the condition (optional, default: `false`)
 
 ## Simple Examples
 
@@ -45,6 +46,49 @@ var data = new
         Points = 150
     }
 };
+```
+
+## Negated Conditions
+
+Use the `not` attribute to invert a condition. This is useful for "if not" scenarios:
+
+### Basic Negation
+
+```xml
+<if condition="HasDiscount" not="true">
+  <line>No discount available</line>
+</if>
+```
+
+```csharp
+var data = new { HasDiscount = false };
+// Renders "No discount available" because HasDiscount is false and we negate it to true
+```
+
+### Negating Null or Empty Values
+
+```xml
+<if condition="Message" not="true">
+  <line>No message provided</line>
+</if>
+```
+
+```csharp
+var data = new { Message = (string?)null };
+// Renders "No message provided" because Message is null (false) and negated to true
+```
+
+### Negating Numeric Values
+
+```xml
+<if condition="ItemCount" not="true">
+  <line>Cart is empty</line>
+</if>
+```
+
+```csharp
+var data = new { ItemCount = 0 };
+// Renders "Cart is empty" because ItemCount is 0 (false) and negated to true
 ```
 
 ## Condition Evaluation Rules
@@ -98,7 +142,13 @@ new { Data = someObject } // Renders (any non-null object)
     <line>Discount Applied: -$${DiscountAmount}</line>
     <line>Final Total: $${FinalTotal}</line>
   </if>
+  
+  <!-- Show message when no discount -->
+  <if condition="HasDiscount" not="true">
+    <line>No discounts applied</line>
+  </if>
 </receipt>
+```
 ```
 
 ### Loyalty Program

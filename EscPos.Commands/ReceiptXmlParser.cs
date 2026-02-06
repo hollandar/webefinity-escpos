@@ -624,12 +624,20 @@ public class ReceiptXmlParser
             throw new InvalidOperationException("If conditions require a template context. Use Parse(xml, context) or Parse(xml, data).");
 
         var condition = reader.GetAttribute("condition");
+        var notAttribute = reader.GetAttribute("not");
 
         if (string.IsNullOrEmpty(condition))
             throw new ArgumentException("If condition 'condition' attribute is required.");
 
         var conditionValue = _templateContext.GetValue(condition);
         var isTrue = EvaluateCondition(conditionValue);
+        
+        // Apply negation if 'not' attribute is true
+        var negate = !string.IsNullOrEmpty(notAttribute) && bool.Parse(notAttribute);
+        if (negate)
+        {
+            isTrue = !isTrue;
+        }
 
         if (!isTrue)
         {
