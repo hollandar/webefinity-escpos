@@ -149,7 +149,6 @@ new { Data = someObject } // Renders (any non-null object)
   </if>
 </receipt>
 ```
-```
 
 ### Loyalty Program
 
