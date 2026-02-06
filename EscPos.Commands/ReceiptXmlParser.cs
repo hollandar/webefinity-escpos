@@ -632,9 +632,8 @@ public class ReceiptXmlParser
         var conditionValue = _templateContext.GetValue(condition);
         var isTrue = EvaluateCondition(conditionValue);
         
-        // Apply negation if 'not' attribute is true
-        var negate = !string.IsNullOrEmpty(notAttribute) && bool.TryParse(notAttribute, out var notValue) && notValue;
-        if (negate)
+        // Apply negation if 'not' attribute is explicitly set to true
+        if (!string.IsNullOrEmpty(notAttribute) && bool.TryParse(notAttribute, out var notValue) && notValue)
         {
             isTrue = !isTrue;
         }
