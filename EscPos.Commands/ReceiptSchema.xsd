@@ -29,6 +29,7 @@
       <xs:element name="margin" type="marginType"/>
       <xs:element name="codepage" type="codepageType"/>
       <xs:element name="for" type="forType"/>
+      <xs:element name="if" type="ifType"/>
     </xs:choice>
     <xs:attribute name="encoding" type="xs:string"/>
   </xs:complexType>
@@ -256,9 +257,38 @@
       <xs:element name="margin" type="marginType"/>
       <xs:element name="codepage" type="codepageType"/>
       <xs:element name="for" type="forType"/>
+      <xs:element name="if" type="ifType"/>
     </xs:choice>
     <xs:attribute name="var" type="xs:string" use="required"/>
     <xs:attribute name="in" type="xs:string" use="required"/>
+  </xs:complexType>
+
+  <xs:complexType name="ifType">
+    <xs:choice minOccurs="0" maxOccurs="unbounded">
+      <xs:element name="text" type="textType"/>
+      <xs:element name="line" type="lineType"/>
+      <xs:element name="bold" type="styledTextType"/>
+      <xs:element name="underline" type="underlineType"/>
+      <xs:element name="invert" type="styledTextType"/>
+      <xs:element name="size" type="sizeType"/>
+      <xs:element name="align" type="alignType"/>
+      <xs:element name="font" type="fontType"/>
+      <xs:element name="rotate90" type="styledTextType"/>
+      <xs:element name="qrcode" type="qrcodeType"/>
+      <xs:element name="barcode" type="barcodeType"/>
+      <xs:element name="image" type="imageType"/>
+      <xs:element name="feed" type="feedType"/>
+      <xs:element name="cut" type="cutType"/>
+      <xs:element name="drawer" type="drawerType"/>
+      <xs:element name="beep" type="beepType"/>
+      <xs:element name="initialize"/>
+      <xs:element name="spacing" type="spacingType"/>
+      <xs:element name="margin" type="marginType"/>
+      <xs:element name="codepage" type="codepageType"/>
+      <xs:element name="for" type="forType"/>
+      <xs:element name="if" type="ifType"/>
+    </xs:choice>
+    <xs:attribute name="condition" type="xs:string" use="required"/>
   </xs:complexType>
 
 </xs:schema>

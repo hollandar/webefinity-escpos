@@ -181,6 +181,9 @@ public class ReceiptXmlParser
             case "for":
                 ProcessFor(reader);
                 break;
+            case "if":
+                ProcessIf(reader);
+                break;
             case "spacing":
                 ProcessSpacing(reader);
                 break;
@@ -613,6 +616,71 @@ public class ReceiptXmlParser
         {
             _buffer.AddRange(PrintCommands.SelectCodePage(byte.Parse(value)));
         }
+    }
+
+    private void ProcessIf(XmlReader reader)
+    {
+        if (_templateContext is null)
+            throw new InvalidOperationException("If conditions require a template context. Use Parse(xml, context) or Parse(xml, data).");
+
+        var condition = reader.GetAttribute("condition");
+
+        if (string.IsNullOrEmpty(condition))
+            throw new ArgumentException("If condition 'condition' attribute is required.");
+
+        var conditionValue = _templateContext.GetValue(condition);
+        var isTrue = EvaluateCondition(conditionValue);
+
+        if (!isTrue)
+        {
+            // Skip the entire if block
+            if (!reader.IsEmptyElement)
+            {
+                reader.Skip();
+            }
+            return;
+        }
+
+        // Condition is true, process child elements
+        if (reader.IsEmptyElement)
+            return;
+
+        ProcessChildContent(reader, "if");
+    }
+
+    private static bool EvaluateCondition(object? value)
+    {
+        if (value is null)
+            return false;
+
+        // Handle boolean directly
+        if (value is bool boolValue)
+            return boolValue;
+
+        // Handle string representations of boolean
+        if (value is string strValue)
+        {
+            if (bool.TryParse(strValue, out var parsed))
+                return parsed;
+
+            // Consider non-empty strings as true (similar to JavaScript truthy)
+            return !string.IsNullOrWhiteSpace(strValue);
+        }
+
+        // Handle numeric types - non-zero is true
+        if (value is int intValue)
+            return intValue != 0;
+        if (value is long longValue)
+            return longValue != 0;
+        if (value is decimal decimalValue)
+            return decimalValue != 0;
+        if (value is double doubleValue)
+            return doubleValue != 0;
+        if (value is float floatValue)
+            return floatValue != 0;
+
+        // Any non-null object is considered true
+        return true;
     }
 
     private void ProcessChildContent(XmlReader reader, string parentElement)

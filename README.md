@@ -137,12 +137,16 @@ await printer.SendAsync(commands);
 
 **Features:**
 - `${variable}` syntax for template substitution
+- `<if>` conditional rendering
 - `<for>` loops for iterating collections
 - Nested properties support (`${Order.Items}`)
 - Schema validation
 - All ESC/POS commands available as XML elements
 
 **?? [Complete XML Template Documentation](ReceiptXmlParser.md)**
+- [Template Variables Guide](ReceiptTemplateVariables.md)
+- [Conditional Rendering Guide](ReceiptConditionals.md)
+- [For Loops Guide](ReceiptLoops.md)
 - [Template Variables Guide](ReceiptTemplateVariables.md)
 - [For Loops Guide](ReceiptLoops.md)
 
@@ -231,6 +235,7 @@ buffer
 
 - **[XML Template System](ReceiptXmlParser.md)** - Complete guide to declarative receipt generation
   - [Template Variables](ReceiptTemplateVariables.md) - `${variable}` syntax and usage
+  - [Conditional Rendering](ReceiptConditionals.md) - `<if>` conditions for dynamic content
   - [For Loops](ReceiptLoops.md) - Iterating over collections in templates
 - **API Reference** - See XML documentation in source code
 

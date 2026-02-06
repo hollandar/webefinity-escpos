@@ -11,6 +11,7 @@ The `ReceiptXmlParser` allows you to define receipt layouts in XML format and au
 - **XML Schema Validation**: Validates receipt XML against XSD schema
 - **Type Safety**: Compile-time validation of attributes and element structure
 - **Template Variables**: Built-in `${variable}` substitution support
+- **Conditional Rendering**: Show/hide content with `<if>` elements
 - **For Loops**: Iterate over collections with `<for>` elements
 - **Nested Formatting**: Supports nested text styling (bold within size, etc.)
 - **Full Command Support**: All ESC/POS commands from PrintCommands
@@ -125,6 +126,42 @@ byte[] commands = ReceiptXmlParser.Parse(xml, data);
 ```
 
 **See [ReceiptLoops.md](ReceiptLoops.md) for complete loop documentation and examples.**
+
+### With Conditionals
+
+Show or hide content based on conditions:
+
+```csharp
+var xml = @"<?xml version=""1.0""?>
+<receipt xmlns=""http://webefinity.com/escpos/receipt"">
+  <line>Order Total: $${Total}</line>
+  
+  <if condition=""HasDiscount"">
+    <line>** 10% DISCOUNT APPLIED **</line>
+    <line>You saved: $${DiscountAmount}</line>
+  </if>
+  
+  <if condition=""Customer.IsMember"">
+    <line>Loyalty Points Earned: ${Customer.PointsEarned}</line>
+  </if>
+</receipt>";
+
+var data = new
+{
+    Total = "24.99",
+    HasDiscount = true,
+    DiscountAmount = "2.50",
+    Customer = new
+    {
+        IsMember = true,
+        PointsEarned = 25
+    }
+};
+
+byte[] commands = ReceiptXmlParser.Parse(xml, data);
+```
+
+**See [ReceiptConditionals.md](ReceiptConditionals.md) for complete conditional rendering guide.**
 
 ## XML Elements Reference
 
@@ -347,6 +384,29 @@ byte[] commands = ReceiptXmlParser.Parse(xml, data);
 - Can access nested properties: `${item.Property.SubProperty}`
 
 **See [ReceiptLoops.md](ReceiptLoops.md) for complete examples.**
+
+#### `<if>` - Conditional rendering
+```xml
+<if condition="HasDiscount">
+  <line>** Discount Applied **</line>
+</if>
+```
+
+**Attributes:**
+- `condition`: Path to a boolean variable (required)
+
+**Features:**
+- Evaluates boolean, string, numeric, and null values
+- Supports nested properties: `Customer.IsMember`
+- Works inside `<for>` loops
+- Can be nested for complex logic
+- Non-existent variables evaluate to false
+
+**Condition Evaluation:**
+- `true` / non-zero numbers / non-empty strings → renders content
+- `false` / `0` / `null` / empty strings → skips content
+
+**See [ReceiptConditionals.md](ReceiptConditionals.md) for complete examples.**
 
 ## Nested Elements
 

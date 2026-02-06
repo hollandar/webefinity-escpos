@@ -429,4 +429,124 @@ public static class ReceiptXmlExample
         File.WriteAllText("receipt_template.xml", xml);
         System.Console.WriteLine("Template saved to receipt_template.xml");
     }
+
+    public static void PrintReceiptWithConditionals()
+    {
+        var xml = @"<?xml version=""1.0"" encoding=""utf-8""?>
+<receipt xmlns=""http://webefinity.com/escpos/receipt"">
+  <initialize/>
+  
+  <align value=""center"">
+    <bold>
+      <size width=""2"" height=""2"">
+        <line>${Store.Name}</line>
+      </size>
+    </bold>
+  </align>
+  
+  <line>================================</line>
+  <line>Order #${Order.Number}</line>
+  
+  <!-- Conditional: Show discount if applied -->
+  <if condition=""Order.HasDiscount"">
+    <line>** 10% DISCOUNT APPLIED **</line>
+  </if>
+  
+  <for var=""item"" in=""Order.Items"">
+    <text>${item.Quantity}x ${item.Name}</text>
+    <align value=""right"">
+      <line>$${item.Price}</line>
+    </align>
+    
+    <!-- Show sale indicator for items on sale -->
+    <if condition=""item.OnSale"">
+      <line>  (SALE ITEM!)</line>
+    </if>
+  </for>
+  
+  <line>--------------------------------</line>
+  
+  <align value=""right"">
+    <line>Subtotal:    $${Order.Subtotal}</line>
+    
+    <!-- Only show discount line if discount was applied -->
+    <if condition=""Order.HasDiscount"">
+      <line>Discount:    -$${Order.DiscountAmount}</line>
+    </if>
+    
+    <line>Tax:         $${Order.Tax}</line>
+    <bold><line>Total:       $${Order.Total}</line></bold>
+  </align>
+  
+  <line>================================</line>
+  
+  <!-- Conditional: Show loyalty points if customer is a member -->
+  <if condition=""Customer.IsMember"">
+    <align value=""center"">
+      <line>Loyalty Points Earned: ${Customer.PointsEarned}</line>
+      <line>Total Points: ${Customer.TotalPoints}</line>
+    </align>
+    <line>================================</line>
+  </if>
+  
+  <!-- Conditional: Show special offer if available -->
+  <if condition=""Promotion.HasOffer"">
+    <align value=""center"">
+      <bold>
+        <line>SPECIAL OFFER!</line>
+        <line>${Promotion.Message}</line>
+      </bold>
+    </align>
+    <line>================================</line>
+  </if>
+  
+  <align value=""center"">
+    <line>Thank you for your order!</line>
+  </align>
+  
+  <feed lines=""3""/>
+  <cut type=""partial""/>
+</receipt>";
+
+        var orderData = new
+        {
+            Store = new { Name = "CAFE" },
+            Order = new
+            {
+                Number = "1234",
+                HasDiscount = true,
+                DiscountAmount = "2.50",
+                Items = new object[]
+                {
+                    new { Quantity = 1, Name = "Coffee", Price = "3.50", OnSale = true },
+                    new { Quantity = 1, Name = "Muffin", Price = "2.50", OnSale = false }
+                },
+                Subtotal = "6.00",
+                Tax = "0.48",
+                Total = "3.98"
+            },
+            Customer = new
+            {
+                IsMember = true,
+                PointsEarned = 40,
+                TotalPoints = 540
+            },
+            Promotion = new
+            {
+                HasOffer = true,
+                Message = "Buy 2 coffees, get 1 free!"
+            }
+        };
+
+        try
+        {
+            var escposData = ReceiptXmlParser.Parse(xml, orderData, validate: true);
+            
+            System.Console.WriteLine($"Generated {escposData.Length} bytes with conditionals");
+        }
+        catch (Exception ex)
+        {
+            System.Console.WriteLine($"Error: {ex.Message}");
+        }
+    }
 }

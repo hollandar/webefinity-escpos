@@ -901,6 +901,156 @@ public sealed class ReceiptXmlParserTests
 
     #endregion
 
+    #region Conditional Rendering (If)
+
+    [Fact]
+    public void Parse_IfConditionTrue_RendersContent()
+    {
+        var xml = $@"<?xml version=""1.0""?>
+<receipt xmlns=""{XmlNamespace}"">
+  <if condition=""HasDiscount"">
+    <line>10% Discount Applied!</line>
+  </if>
+</receipt>";
+
+        var data = new { HasDiscount = true };
+        var result = ReceiptXmlParser.Parse(xml, data, validate: true);
+        var expected = PrintCommands.PrintLine("10% Discount Applied!");
+
+        Assert.Equal(expected, result);
+    }
+
+    [Fact]
+    public void Parse_IfConditionFalse_SkipsContent()
+    {
+        var xml = $@"<?xml version=""1.0""?>
+<receipt xmlns=""{XmlNamespace}"">
+  <if condition=""HasDiscount"">
+    <line>10% Discount Applied!</line>
+  </if>
+</receipt>";
+
+        var data = new { HasDiscount = false };
+        var result = ReceiptXmlParser.Parse(xml, data, validate: true);
+
+        Assert.Empty(result);
+    }
+
+    [Fact]
+    public void Parse_IfConditionStringTrue_RendersContent()
+    {
+        var xml = $@"<?xml version=""1.0""?>
+<receipt xmlns=""{XmlNamespace}"">
+  <if condition=""Status"">
+    <line>Status: ${{Status}}</line>
+  </if>
+</receipt>";
+
+        var data = new { Status = "true" };
+        var result = ReceiptXmlParser.Parse(xml, data, validate: true);
+        var expected = PrintCommands.PrintLine("Status: true");
+
+        Assert.Equal(expected, result);
+    }
+
+    [Fact]
+    public void Parse_IfConditionNonZeroNumber_RendersContent()
+    {
+        var xml = $@"<?xml version=""1.0""?>
+<receipt xmlns=""{XmlNamespace}"">
+  <if condition=""ItemCount"">
+    <line>You have ${{ItemCount}} items</line>
+  </if>
+</receipt>";
+
+        var data = new { ItemCount = 5 };
+        var result = ReceiptXmlParser.Parse(xml, data, validate: true);
+        var expected = PrintCommands.PrintLine("You have 5 items");
+
+        Assert.Equal(expected, result);
+    }
+
+    [Fact]
+    public void Parse_IfConditionZero_SkipsContent()
+    {
+        var xml = $@"<?xml version=""1.0""?>
+<receipt xmlns=""{XmlNamespace}"">
+  <if condition=""ItemCount"">
+    <line>You have items</line>
+  </if>
+</receipt>";
+
+        var data = new { ItemCount = 0 };
+        var result = ReceiptXmlParser.Parse(xml, data, validate: true);
+
+        Assert.Empty(result);
+    }
+
+    [Fact]
+    public void Parse_IfConditionNull_SkipsContent()
+    {
+        var xml = $@"<?xml version=""1.0""?>
+<receipt xmlns=""{XmlNamespace}"">
+  <if condition=""OptionalMessage"">
+    <line>${{OptionalMessage}}</line>
+  </if>
+</receipt>";
+
+        var data = new { OptionalMessage = (string?)null };
+        var result = ReceiptXmlParser.Parse(xml, data, validate: true);
+
+        Assert.Empty(result);
+    }
+
+    [Fact]
+    public void Parse_IfWithinForLoop_WorksCorrectly()
+    {
+        var xml = $@"<?xml version=""1.0""?>
+<receipt xmlns=""{XmlNamespace}"">
+  <for var=""item"" in=""Items"">
+    <if condition=""item.Show"">
+      <line>${{item.Name}}</line>
+    </if>
+  </for>
+</receipt>";
+
+        var data = new
+        {
+            Items = new object[]
+            {
+                new { Name = "Item1", Show = true },
+                new { Name = "Item2", Show = false },
+                new { Name = "Item3", Show = true }
+            }
+        };
+
+        var result = ReceiptXmlParser.Parse(xml, data, validate: true);
+
+        var expectedList = new List<byte>();
+        expectedList.AddRange(PrintCommands.PrintLine("Item1"));
+        expectedList.AddRange(PrintCommands.PrintLine("Item3"));
+
+        Assert.Equal(expectedList.ToArray(), result);
+    }
+
+    [Fact]
+    public void Parse_IfWithoutContext_ThrowsException()
+    {
+        var xml = $@"<?xml version=""1.0""?>
+<receipt xmlns=""{XmlNamespace}"">
+  <if condition=""HasDiscount"">
+    <line>Discount</line>
+  </if>
+</receipt>";
+
+        var ex = Assert.Throws<InvalidOperationException>(() => 
+            ReceiptXmlParser.Parse(xml, validate: true));
+        
+        Assert.Contains("template context", ex.Message, StringComparison.OrdinalIgnoreCase);
+    }
+
+    #endregion
+
     #region File-based Tests
 
     [Fact]
