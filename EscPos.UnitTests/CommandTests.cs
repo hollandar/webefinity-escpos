@@ -50,7 +50,7 @@ public class CommandTests
     [Fact]
     public void PrintLine_CustomEncoding_AppendsLineFeed()
     {
-        var actual = PrintCommands.PrintLine("£", Encoding.UTF8);
+        var actual = PrintCommands.PrintLine("\u00A3", Encoding.UTF8); // £ pound sign
         AssertBytesEqual(new byte[] { 0xC2, 0xA3, 0x0A }, actual);
     }
 
