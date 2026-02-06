@@ -29,7 +29,7 @@ public class CommandTests
     [Fact]
     public void Text_CustomEncoding_IsUsed()
     {
-        var actual = PrintCommands.Text("£", Encoding.UTF8);
+        var actual = PrintCommands.Text("\u00A3", Encoding.UTF8); // £ pound sign
         AssertBytesEqual(new byte[] { 0xC2, 0xA3 }, actual);
     }
 

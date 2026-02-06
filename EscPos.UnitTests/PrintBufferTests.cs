@@ -26,7 +26,7 @@ public sealed class PrintBufferTests
         buffer.WriteLine("", lineFeedCount: 0);
 
         // 5) WriteLine with explicit UTF-8 encoding and lineFeedCount=1
-        buffer.WriteLine("£", Encoding.UTF8, lineFeedCount: 1);
+        buffer.WriteLine("\u00A3", Encoding.UTF8, lineFeedCount: 1); // £ pound sign
 
         // 6) WriteLine with lineFeedCount>1
         buffer.WriteLine("THANKS", lineFeedCount: 2);
@@ -44,7 +44,7 @@ public sealed class PrintBufferTests
         expected.AddRange(new byte[] { 0x1B, 0x61, 0x01 }); // AlignCenter
         expected.AddRange(new byte[] { 0x53, 0x54, 0x4F, 0x52, 0x45 }); // "STORE" ASCII
         // WriteLine("", lineFeedCount:0) => nothing
-        expected.AddRange(new byte[] { 0xC2, 0xA3, 0x0A }); // "£" UTF-8 + LF
+        expected.AddRange(new byte[] { 0xC2, 0xA3, 0x0A }); // "\u00A3" (£) UTF-8 + LF
         expected.AddRange(new byte[] { 0x54, 0x48, 0x41, 0x4E, 0x4B, 0x53, 0x0A, 0x0A }); // "THANKS" + 2x LF
         expected.AddRange(new byte[] { 0x0A }); // WriteLine() => default text="" then LF
         expected.AddRange(new byte[] { 0x1D, 0x56, 0x00 }); // CutFull
