@@ -12,6 +12,12 @@ The `<if>` element allows you to conditionally include content in your receipt t
 
 **Attributes:**
 - `condition`: The path to a variable that will be evaluated as a boolean (required)
+- `not`: Negates the condition when present. Can be used as:
+  - `not=""` - negates the condition (empty value)
+  - `not="true"` - negates the condition
+  - `not="false"` - does NOT negate (regular condition)
+  - If omitted - does NOT negate (regular condition)
+  - Any other value throws an `ArgumentException`
 
 ## Simple Examples
 
@@ -45,6 +51,79 @@ var data = new
         Points = 150
     }
 };
+```
+
+## Negated Conditions
+
+Use the `not` attribute to invert a condition. This is useful for "if not" scenarios. The `not` attribute can be used in three ways:
+
+1. **Attribute without value**: `<if condition="..." not="">`
+2. **Attribute with "true" value**: `<if condition="..." not="true">`
+3. **Attribute with "false" value**: `<if condition="..." not="false">` (does NOT negate)
+
+### Basic Negation (with empty value)
+
+```xml
+<if condition="HasDiscount" not="">
+  <line>No discount available</line>
+</if>
+```
+
+```csharp
+var data = new { HasDiscount = false };
+// Renders "No discount available" because HasDiscount is false and we negate it to true
+```
+
+### Basic Negation (with "true" value)
+
+```xml
+<if condition="HasDiscount" not="true">
+  <line>No discount available</line>
+</if>
+```
+
+```csharp
+var data = new { HasDiscount = false };
+// Renders "No discount available" because HasDiscount is false and we negate it to true
+```
+
+### Explicitly Disabling Negation
+
+```xml
+<if condition="HasDiscount" not="false">
+  <line>Discount available</line>
+</if>
+```
+
+```csharp
+var data = new { HasDiscount = true };
+// Renders "Discount available" because HasDiscount is true and not="false" means no negation
+```
+
+### Negating Null or Empty Values
+
+```xml
+<if condition="Message" not="">
+  <line>No message provided</line>
+</if>
+```
+
+```csharp
+var data = new { Message = (string?)null };
+// Renders "No message provided" because Message is null (false) and negated to true
+```
+
+### Negating Numeric Values
+
+```xml
+<if condition="ItemCount" not="">
+  <line>Cart is empty</line>
+</if>
+```
+
+```csharp
+var data = new { ItemCount = 0 };
+// Renders "Cart is empty" because ItemCount is 0 (false) and negated to true
 ```
 
 ## Condition Evaluation Rules
@@ -97,6 +176,11 @@ new { Data = someObject } // Renders (any non-null object)
   <if condition="HasDiscount">
     <line>Discount Applied: -$${DiscountAmount}</line>
     <line>Final Total: $${FinalTotal}</line>
+  </if>
+  
+  <!-- Show message when no discount (using negation with empty value) -->
+  <if condition="HasDiscount" not="">
+    <line>No discounts applied</line>
   </if>
 </receipt>
 ```
