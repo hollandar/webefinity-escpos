@@ -641,7 +641,7 @@ public class ReceiptXmlParser
         if (notAttribute is not null)
         {
             // Attribute exists - determine if it should negate
-            if (string.IsNullOrEmpty(notAttribute))
+            if (notAttribute.Length == 0)
             {
                 // Empty value means negate (e.g., not="")
                 isTrue = !isTrue;
@@ -658,7 +658,7 @@ public class ReceiptXmlParser
             else
             {
                 // Any other value is invalid
-                throw new ArgumentException($"Invalid value '{notAttribute}' for 'not' attribute. Valid values are: empty string, 'true', or 'false'.");
+                throw new ArgumentException($"Invalid value '{notAttribute}' for 'not' attribute. Valid values are: no value (not=\"\"), 'true', or 'false'.");
             }
         }
 

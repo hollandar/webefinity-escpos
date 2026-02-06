@@ -1181,6 +1181,7 @@ public sealed class ReceiptXmlParserTests
             ReceiptXmlParser.Parse(xml, data, validate: false));
         
         Assert.Contains("Invalid value 'invalid' for 'not' attribute", ex.Message);
+        Assert.Contains("no value (not=\"\")", ex.Message);
     }
 
     #endregion
