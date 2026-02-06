@@ -624,42 +624,25 @@ public class ReceiptXmlParser
             throw new InvalidOperationException("If conditions require a template context. Use Parse(xml, context) or Parse(xml, data).");
 
         var condition = reader.GetAttribute("condition");
-        var notAttribute = reader.GetAttribute("not");
 
         if (string.IsNullOrEmpty(condition))
             throw new ArgumentException("If condition 'condition' attribute is required.");
 
+        // Check if the condition starts with '!' for negation
+        bool negate = condition.StartsWith("!");
+        if (negate)
+        {
+            // Remove the '!' prefix from the condition
+            condition = condition[1..];
+        }
+
         var conditionValue = _templateContext.GetValue(condition);
         var isTrue = EvaluateCondition(conditionValue);
         
-        // Apply negation based on 'not' attribute presence and value
-        // - If 'not' attribute exists without a value (empty string): negate
-        // - If 'not' attribute has value "true": negate
-        // - If 'not' attribute has value "false": don't negate
-        // - If 'not' attribute doesn't exist: don't negate
-        // - Any other value is treated as an error for clarity
-        if (notAttribute is not null)
+        // Apply negation if '!' prefix was present
+        if (negate)
         {
-            // Attribute exists - determine if it should negate
-            if (notAttribute.Length == 0)
-            {
-                // Empty value means negate (e.g., not="")
-                isTrue = !isTrue;
-            }
-            else if (notAttribute.Equals("true", StringComparison.OrdinalIgnoreCase))
-            {
-                // Explicit true means negate
-                isTrue = !isTrue;
-            }
-            else if (notAttribute.Equals("false", StringComparison.OrdinalIgnoreCase))
-            {
-                // Explicit false means don't negate (no-op)
-            }
-            else
-            {
-                // Any other value is invalid
-                throw new ArgumentException($"Invalid value '{notAttribute}' for 'not' attribute. Valid values are: no value (not=\"\"), 'true', or 'false'.");
-            }
+            isTrue = !isTrue;
         }
 
         if (!isTrue)

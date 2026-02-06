@@ -1050,11 +1050,11 @@ public sealed class ReceiptXmlParserTests
     }
 
     [Fact]
-    public void Parse_IfWithNotAttributeTrue_NegatesCondition()
+    public void Parse_IfWithExclamationPrefix_NegatesCondition()
     {
         var xml = $@"<?xml version=""1.0""?>
 <receipt xmlns=""{XmlNamespace}"">
-  <if condition=""HasDiscount"" not=""true"">
+  <if condition=""!HasDiscount"">
     <line>No discount available</line>
   </if>
 </receipt>";
@@ -1067,28 +1067,11 @@ public sealed class ReceiptXmlParserTests
     }
 
     [Fact]
-    public void Parse_IfWithNotAttributeWithoutValue_NegatesCondition()
+    public void Parse_IfWithExclamationPrefix_SkipsWhenConditionTrue()
     {
         var xml = $@"<?xml version=""1.0""?>
 <receipt xmlns=""{XmlNamespace}"">
-  <if condition=""HasDiscount"" not="""">
-    <line>No discount available</line>
-  </if>
-</receipt>";
-
-        var data = new { HasDiscount = false };
-        var result = ReceiptXmlParser.Parse(xml, data, validate: false);
-        var expected = PrintCommands.PrintLine("No discount available");
-
-        Assert.Equal(expected, result);
-    }
-
-    [Fact]
-    public void Parse_IfWithNotAttributeTrue_SkipsWhenConditionTrue()
-    {
-        var xml = $@"<?xml version=""1.0""?>
-<receipt xmlns=""{XmlNamespace}"">
-  <if condition=""HasDiscount"" not=""true"">
+  <if condition=""!HasDiscount"">
     <line>No discount available</line>
   </if>
 </receipt>";
@@ -1100,27 +1083,11 @@ public sealed class ReceiptXmlParserTests
     }
 
     [Fact]
-    public void Parse_IfWithNotAttributeWithoutValue_SkipsWhenConditionTrue()
+    public void Parse_IfWithoutExclamationPrefix_BehavesNormally()
     {
         var xml = $@"<?xml version=""1.0""?>
 <receipt xmlns=""{XmlNamespace}"">
-  <if condition=""HasDiscount"" not="""">
-    <line>No discount available</line>
-  </if>
-</receipt>";
-
-        var data = new { HasDiscount = true };
-        var result = ReceiptXmlParser.Parse(xml, data, validate: false);
-
-        Assert.Empty(result);
-    }
-
-    [Fact]
-    public void Parse_IfWithNotAttributeFalse_BehavesNormally()
-    {
-        var xml = $@"<?xml version=""1.0""?>
-<receipt xmlns=""{XmlNamespace}"">
-  <if condition=""HasDiscount"" not=""false"">
+  <if condition=""HasDiscount"">
     <line>Discount available</line>
   </if>
 </receipt>";
@@ -1133,11 +1100,11 @@ public sealed class ReceiptXmlParserTests
     }
 
     [Fact]
-    public void Parse_IfWithNotAttribute_NegatesNumericCondition()
+    public void Parse_IfWithExclamationPrefix_NegatesNumericCondition()
     {
         var xml = $@"<?xml version=""1.0""?>
 <receipt xmlns=""{XmlNamespace}"">
-  <if condition=""ItemCount"" not=""true"">
+  <if condition=""!ItemCount"">
     <line>No items in cart</line>
   </if>
 </receipt>";
@@ -1150,11 +1117,11 @@ public sealed class ReceiptXmlParserTests
     }
 
     [Fact]
-    public void Parse_IfWithNotAttribute_NegatesNullCondition()
+    public void Parse_IfWithExclamationPrefix_NegatesNullCondition()
     {
         var xml = $@"<?xml version=""1.0""?>
 <receipt xmlns=""{XmlNamespace}"">
-  <if condition=""Message"" not=""true"">
+  <if condition=""!Message"">
     <line>No message provided</line>
   </if>
 </receipt>";
@@ -1164,24 +1131,6 @@ public sealed class ReceiptXmlParserTests
         var expected = PrintCommands.PrintLine("No message provided");
 
         Assert.Equal(expected, result);
-    }
-
-    [Fact]
-    public void Parse_IfWithInvalidNotAttributeValue_ThrowsException()
-    {
-        var xml = $@"<?xml version=""1.0""?>
-<receipt xmlns=""{XmlNamespace}"">
-  <if condition=""HasDiscount"" not=""invalid"">
-    <line>Content</line>
-  </if>
-</receipt>";
-
-        var data = new { HasDiscount = true };
-        var ex = Assert.Throws<ArgumentException>(() => 
-            ReceiptXmlParser.Parse(xml, data, validate: false));
-        
-        Assert.Contains("Invalid value 'invalid' for 'not' attribute", ex.Message);
-        Assert.Contains("no value (not=\"\")", ex.Message);
     }
 
     #endregion
