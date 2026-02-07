@@ -17,6 +17,7 @@ public sealed class TextPrinter : IPrinter
     private int _charWidth = 1;
     private int _charHeight = 1;
     private readonly int _lineWidth;
+    private string? _storedQrData; // Store QR code data for later printing
 
     public TextPrinter(int lineWidth = 48)
     {
@@ -298,8 +299,9 @@ public sealed class TextPrinter : IPrinter
                         {
                             qrData.Add(data[i + 8 + j]);
                         }
+                        // Store the QR code data for later printing
+                        _storedQrData = Encoding.UTF8.GetString(qrData.ToArray());
                         i += 8 + dataLen;
-                        // Store for later print command
                         continue;
                     }
                     
@@ -308,6 +310,12 @@ public sealed class TextPrinter : IPrinter
                     {
                         FlushCurrentLine();
                         _output.AppendLine("[QRCode]");
+                        // Print the stored QR code data if available
+                        if (!string.IsNullOrEmpty(_storedQrData))
+                        {
+                            _output.AppendLine(_storedQrData);
+                            _storedQrData = null; // Clear after printing
+                        }
                         i += 8;
                         continue;
                     }

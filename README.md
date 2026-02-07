@@ -266,6 +266,7 @@ Console.WriteLine(textOutput);
 --------------------------------
              Total:      $19.97
 [QRCode]
+https://shop.com/order/1234
 
 
 ---

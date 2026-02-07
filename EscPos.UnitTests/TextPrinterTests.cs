@@ -82,6 +82,7 @@ public sealed class TextPrinterTests
         var output = printer.GetOutput();
         
         Assert.Contains("[QRCode]", output);
+        Assert.Contains("https://example.com", output);
     }
     
     [Fact]
@@ -346,6 +347,7 @@ public sealed class TextPrinterTests
         Assert.Contains("Subtotal:", output);
         Assert.Contains("Total:", output);
         Assert.Contains("[QRCode]", output);
+        Assert.Contains("https://restaurant.com/order/1234", output); // QR code data
         Assert.Contains("Scan for receipt", output);
         Assert.Contains("---", output); // Partial cut
     }
