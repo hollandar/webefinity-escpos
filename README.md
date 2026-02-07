@@ -216,6 +216,71 @@ buffer
     .Write(PrintCommands.InvertOff());
 ```
 
+### Testing and Debugging with TextPrinter
+
+The `TextPrinter` class allows you to preview receipt output as human-readable text without connecting to an actual printer. This is useful for testing, debugging, and development.
+
+```csharp
+using EscPos.Printers;
+
+// Create a TextPrinter with desired line width (default is 48 characters)
+using var textPrinter = new TextPrinter(lineWidth: 48);
+
+// Parse your receipt XML or build commands
+var xml = @"<?xml version=""1.0"" encoding=""utf-8""?>
+<receipt xmlns=""http://webefinity.com/escpos/receipt"">
+  <initialize/>
+  <align value=""center"">
+    <bold><line>MY RESTAURANT</line></bold>
+    <line>123 Main Street</line>
+  </align>
+  <line>================================</line>
+  <line>1x Burger.................$12.99</line>
+  <line>2x Fries..................$6.98</line>
+  <line>--------------------------------</line>
+  <align value=""right"">
+    <bold><line>Total:      $19.97</line></bold>
+  </align>
+  <qrcode data=""https://shop.com/order/1234"" size=""4""/>
+  <feed lines=""2""/>
+  <cut type=""partial""/>
+</receipt>";
+
+var escposData = ReceiptXmlParser.Parse(xml);
+
+// Send to TextPrinter
+await textPrinter.SendAsync(escposData);
+
+// Get the text representation
+string textOutput = textPrinter.GetOutput();
+Console.WriteLine(textOutput);
+```
+
+**Output:**
+```
+        MY RESTAURANT
+        123 Main Street
+================================
+1x Burger.................$12.99
+2x Fries..................$6.98
+--------------------------------
+             Total:      $19.97
+[QRCode]
+
+
+---
+```
+
+**Features:**
+- **Text-only commands**: Bold, underline, alignment, character sizing are interpreted
+- **Images**: Shown as `[IMAGE]`
+- **Barcodes**: Shown as `[QRCode]`, `[CODE128]`, etc., with barcode data on the next line
+- **Paper cuts**: Full cut = `------`, Partial cut = `---`
+- **Alignment**: Left, center, and right alignment with configurable line width
+- **No printer required**: Perfect for unit tests and CI/CD pipelines
+
+This makes it easy to validate receipt formatting and content without physical hardware.
+
 ## Project Structure
 
 - **EscPos.Commands**: Core ESC/POS command generation and XML template system

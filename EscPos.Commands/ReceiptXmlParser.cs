@@ -208,20 +208,59 @@ public class ReceiptXmlParser
     private void ProcessText(XmlReader reader)
     {
         var encoding = GetEncoding(reader);
-        var content = reader.ReadElementContentAsString();
-        if (!string.IsNullOrEmpty(content))
+        
+        // Handle empty elements
+        if (reader.IsEmptyElement)
         {
-            content = SubstituteVariables(content);
-            _buffer.AddRange(PrintCommands.Text(content, encoding));
+            return;
+        }
+        
+        // Read the content manually without using ReadElementContentAsString
+        // which would advance the reader past the element
+        var content = new StringBuilder();
+        var depth = reader.Depth;
+        
+        while (reader.Read() && reader.Depth > depth)
+        {
+            if (reader.NodeType == XmlNodeType.Text || reader.NodeType == XmlNodeType.CDATA)
+            {
+                content.Append(reader.Value);
+            }
+        }
+        
+        if (content.Length > 0)
+        {
+            var text = SubstituteVariables(content.ToString());
+            _buffer.AddRange(PrintCommands.Text(text, encoding));
         }
     }
 
     private void ProcessLine(XmlReader reader)
     {
         var encoding = GetEncoding(reader);
-        var content = reader.ReadElementContentAsString();
-        content = SubstituteVariables(content);
-        _buffer.AddRange(PrintCommands.PrintLine(content, encoding));
+        
+        // Handle empty elements - just output an empty line
+        if (reader.IsEmptyElement)
+        {
+            _buffer.AddRange(PrintCommands.PrintLine("", encoding));
+            return;
+        }
+        
+        // Read the content manually without using ReadElementContentAsString
+        // which would advance the reader past the element
+        var content = new StringBuilder();
+        var depth = reader.Depth;
+        
+        while (reader.Read() && reader.Depth > depth)
+        {
+            if (reader.NodeType == XmlNodeType.Text || reader.NodeType == XmlNodeType.CDATA)
+            {
+                content.Append(reader.Value);
+            }
+        }
+        
+        var text = SubstituteVariables(content.ToString());
+        _buffer.AddRange(PrintCommands.PrintLine(text, encoding));
     }
 
     private void ProcessBold(XmlReader reader)
