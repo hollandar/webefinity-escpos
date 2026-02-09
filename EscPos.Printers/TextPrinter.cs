@@ -217,11 +217,11 @@ public sealed class TextPrinter : IPrinter
                     var mode = data[i + 2];
                     if (mode == 0x00) // Full cut
                     {
-                        _output.AppendLine("------");
+                        _output.AppendLine("-< full cut >-");
                     }
                     else if (mode == 0x01) // Partial cut
                     {
-                        _output.AppendLine("---");
+                        _output.AppendLine("-< cut >-");
                     }
                     else if (mode == 0x41 || mode == 0x42) // With feed
                     {
