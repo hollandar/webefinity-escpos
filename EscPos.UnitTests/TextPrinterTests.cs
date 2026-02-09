@@ -28,7 +28,7 @@ public sealed class TextPrinterTests
         Assert.Contains("RECEIPT", output);
         Assert.Contains("Item 1: $10.00", output);
         Assert.Contains("Item 2: $20.00", output);
-        Assert.Contains("------", output);
+        Assert.Contains("-< full cut >-", output);
     }
     
     [Fact]
@@ -43,8 +43,8 @@ public sealed class TextPrinterTests
         
         var output = printer.GetOutput();
         
-        Assert.Contains("---", output);
-        Assert.DoesNotContain("------", output);
+        Assert.Contains("-< cut >-", output);
+        Assert.DoesNotContain("-< full cut >-", output);
     }
     
     [Fact]
